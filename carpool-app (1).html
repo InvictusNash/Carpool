@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carpool Dismissal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 22px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .row-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .display-screen {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .display-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            text-align: right;
+            letter-spacing: 3px;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .display-row {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffaa00;
+            text-align: right;
+            margin-top: 5px;
+            min-height: 22px;
+        }
+
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .num-btn {
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #f0f0f0, #d9d9d9);
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .num-btn:active {
+            transform: scale(0.95);
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .clear-btn {
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .clear-btn:active {
+            transform: scale(0.95);
+        }
+
+        .backspace-btn {
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #ffd93d, #f9ca24);
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .backspace-btn:active {
+            transform: scale(0.95);
+        }
+
+        .row-btn {
+            padding: 15px;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .row-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .row-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .submit-btn,
+        .search-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .search-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .search-btn:hover {
+            background: #45a049;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 20px 0;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .search-result {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .search-result-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1976D2;
+            margin-bottom: 3px;
+        }
+
+        .search-result-name {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        .config-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .config-toggle {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Carpool Dismissal</h1>
+        <p class="subtitle">Enter card tag numbers for student pickup</p>
+
+        <div class="config-toggle">
+            <button class="toggle-btn" onclick="toggleConfig()">⚙️ Setup Google Sheets</button>
+        </div>
+
+        <div id="configSection" class="config-section hidden">
+            <div class="section-title">Google Sheets Configuration</div>
+            <label>Spreadsheet ID:</label>
+            <input type="text" class="config-input" id="spreadsheetId" placeholder="1WnTdhVoOiI_O7e0ne6uHj1V6bepQ5KI3_LaBifmQzGo">
+            
+            <label>Data Sheet Name (student list):</label>
+            <input type="text" class="config-input" id="dataSheetName" value="Data">
+            
+            <label>Form Responses Sheet Name (where logs go):</label>
+            <input type="text" class="config-input" id="responsesSheetName" value="Form responses">
+            
+            <label>Google Apps Script Web App URL:</label>
+            <input type="text" class="config-input" id="webAppUrl" placeholder="Paste your deployed web app URL here">
+            
+            <button class="config-btn" onclick="saveConfig()">Save Configuration</button>
+            <div id="configMessage"></div>
+        </div>
+
+        <!-- Submit Card Number Section -->
+        <div class="section">
+            <div class="section-title">Submit Card Tag</div>
+            
+            <!-- Display Screen -->
+            <div class="display-screen" id="displayScreen">
+                <div class="display-number" id="displayNumber"></div>
+                <div class="display-row" id="displayRow"></div>
+            </div>
+
+            <!-- Number Pad -->
+            <div class="number-pad">
+                <button class="num-btn" onclick="addDigit('1')">1</button>
+                <button class="num-btn" onclick="addDigit('2')">2</button>
+                <button class="num-btn" onclick="addDigit('3')">3</button>
+                <button class="num-btn" onclick="addDigit('4')">4</button>
+                <button class="num-btn" onclick="addDigit('5')">5</button>
+                <button class="num-btn" onclick="addDigit('6')">6</button>
+                <button class="num-btn" onclick="addDigit('7')">7</button>
+                <button class="num-btn" onclick="addDigit('8')">8</button>
+                <button class="num-btn" onclick="addDigit('9')">9</button>
+                <button class="clear-btn" onclick="clearDisplay()">CLEAR</button>
+                <button class="num-btn" onclick="addDigit('0')">0</button>
+                <button class="backspace-btn" onclick="backspace()">⌫</button>
+            </div>
+
+            <!-- Row Selection -->
+            <div class="row-buttons">
+                <button class="row-btn" id="rowOne" onclick="selectRow('ONE')">ROW 1</button>
+                <button class="row-btn" id="rowTwo" onclick="selectRow('TWO')">ROW 2</button>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="submit-btn" onclick="submitCard()">SUBMIT PICKUP</button>
+            <div id="submitMessage"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Search by Name Section -->
+        <div class="section">
+            <div class="section-title">Search Student</div>
+            
+            <div class="input-group">
+                <label for="studentName">Student Name:</label>
+                <input type="text" id="studentName" placeholder="Enter student name">
+            </div>
+
+            <button class="search-btn" onclick="searchStudent()">Search</button>
+            <div id="searchResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedRow = null;
+        let studentData = [];
+        let currentNumber = '';
+        let config = {
+            spreadsheetId: '',
+            dataSheetName: 'Data',
+            responsesSheetName: 'Form responses',
+            webAppUrl: ''
+        };
+
+        // Load config from localStorage
+        function loadConfig() {
+            const saved = localStorage.getItem('carpoolConfig');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('spreadsheetId').value = config.spreadsheetId || '';
+                document.getElementById('dataSheetName').value = config.dataSheetName || 'Data';
+                document.getElementById('responsesSheetName').value = config.responsesSheetName || 'Form responses';
+                document.getElementById('webAppUrl').value = config.webAppUrl || '';
+            }
+        }
+
+        function toggleConfig() {
+            const section = document.getElementById('configSection');
+            section.classList.toggle('hidden');
+        }
+
+        function saveConfig() {
+            config.spreadsheetId = document.getElementById('spreadsheetId').value;
+            config.dataSheetName = document.getElementById('dataSheetName').value;
+            config.responsesSheetName = document.getElementById('responsesSheetName').value;
+            config.webAppUrl = document.getElementById('webAppUrl').value;
+            
+            localStorage.setItem('carpoolConfig', JSON.stringify(config));
+            
+            const msg = document.getElementById('configMessage');
+            msg.innerHTML = '<div class="message success">Configuration saved! Reloading student data...</div>';
+            
+            // Load student data after config is saved
+            loadStudentData();
+        }
+
+        function addDigit(digit) {
+            currentNumber += digit;
+            updateDisplay();
+        }
+
+        function backspace() {
+            currentNumber = currentNumber.slice(0, -1);
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentNumber = '';
+            selectedRow = null;
+            updateDisplay();
+            document.getElementById('rowOne').classList.remove('selected');
+            document.getElementById('rowTwo').classList.remove('selected');
+        }
+
+        function updateDisplay() {
+            const displayNumber = document.getElementById('displayNumber');
+            const displayRow = document.getElementById('displayRow');
+            
+            displayNumber.textContent = currentNumber || '―';
+            displayRow.textContent = selectedRow ? `ROW ${selectedRow === 'ONE' ? '1' : '2'}` : '';
+        }
+
+        function selectRow(row) {
+            selectedRow = row;
+            document.getElementById('rowOne').classList.toggle('selected', row === 'ONE');
+            document.getElementById('rowTwo').classList.toggle('selected', row === 'TWO');
+            updateDisplay();
+        }
+
+        async function loadStudentData() {
+            if (!config.webAppUrl) {
+                console.log('No web app URL configured yet');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${config.webAppUrl}?action=getStudents&spreadsheetId=${config.spreadsheetId}&sheetName=${config.dataSheetName}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    studentData = data.students;
+                    console.log('Student data loaded:', studentData.length, 'students');
+                }
+            } catch (error) {
+                console.error('Error loading student data:', error);
+            }
+        }
+
+        async function submitCard() {
+            const cardNumber = currentNumber;
+            const msgDiv = document.getElementById('submitMessage');
+
+            if (!cardNumber) {
+                msgDiv.innerHTML = '<div class="message error">Please enter a card number</div>';
+                setTimeout(() => msgDiv.innerHTML = '', 2000);
+                return;
+            }
+
+            if (!selectedRow) {
+                msgDiv.innerHTML = '<div class="message error">Please select ROW 1 or ROW 2</div>';
+                setTimeout(() => msgDiv.innerHTML = '', 2000);
+                return;
+            }
+
+            if (!config.webAppUrl) {
+                msgDiv.innerHTML = '<div class="message error">Please configure Google Sheets in settings above</div>';
+                return;
+            }
+
+            // Find student name
+            const student = studentData.find(s => s.number == cardNumber);
+            const studentName = student ? student.name : 'Unknown';
+
+            try {
+                const response = await fetch(`${config.webAppUrl}?action=submitPickup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        spreadsheetId: config.spreadsheetId,
+                        sheetName: config.responsesSheetName,
+                        cardNumber: cardNumber,
+                        rowType: selectedRow,
+                        studentName: studentName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    msgDiv.innerHTML = `<div class="message success">✓ ${studentName} (${cardNumber}) - ROW ${selectedRow === 'ONE' ? '1' : '2'}</div>`;
+                    
+                    // Clear form
+                    clearDisplay();
+                    
+                    // Clear message after 3 seconds
+                    setTimeout(() => {
+                        msgDiv.innerHTML = '';
+                    }, 3000);
+                } else {
+                    msgDiv.innerHTML = `<div class="message error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                msgDiv.innerHTML = `<div class="message error">Error submitting: ${error.message}</div>`;
+            }
+        }
+
+        function searchStudent() {
+            const searchName = document.getElementById('studentName').value.trim().toLowerCase();
+            const resultDiv = document.getElementById('searchResult');
+
+            if (!searchName) {
+                resultDiv.innerHTML = '<div class="message error">Please enter a student name</div>';
+                return;
+            }
+
+            if (studentData.length === 0) {
+                resultDiv.innerHTML = '<div class="message info">Loading student data... Please configure Google Sheets first.</div>';
+                return;
+            }
+
+            const matches = studentData.filter(s => 
+                s.name.toLowerCase().includes(searchName)
+            );
+
+            if (matches.length === 0) {
+                resultDiv.innerHTML = '<div class="message info">No students found matching "' + searchName + '"</div>';
+            } else if (matches.length === 1) {
+                const student = matches[0];
+                resultDiv.innerHTML = `
+                    <div class="search-result">
+                        <div class="search-result-number">${student.number}</div>
+                        <div class="search-result-name">${student.name}</div>
+                    </div>
+                `;
+            } else {
+                let html = '<div class="message info">Multiple matches found:</div>';
+                matches.forEach(student => {
+                    html += `
+                        <div class="search-result">
+                            <div class="search-result-number">${student.number}</div>
+                            <div class="search-result-name">${student.name}</div>
+                        </div>
+                    `;
+                });
+                resultDiv.innerHTML = html;
+            }
+        }
+
+        // Allow Enter key to search
+        document.getElementById('studentName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchStudent();
+            }
+        });
+
+        // Load config on startup
+        loadConfig();
+        if (config.webAppUrl) {
+            loadStudentData();
+        }
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
