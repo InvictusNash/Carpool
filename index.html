@@ -270,6 +270,17 @@
             border-radius: 10px;
             margin-top: 10px;
             border-left: 4px solid #2196F3;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-result:hover {
+            background: #bbdefb;
+            transform: translateX(5px);
+        }
+
+        .search-result:active {
+            transform: scale(0.98);
         }
 
         .search-result-number {
@@ -600,16 +611,17 @@
             } else if (matches.length === 1) {
                 const student = matches[0];
                 resultDiv.innerHTML = `
-                    <div class="search-result">
+                    <div class="search-result" onclick="quickSubmit('${student.number}', '${student.name.replace(/'/g, "\\'")}')">
                         <div class="search-result-number">${student.number}</div>
                         <div class="search-result-name">${student.name}</div>
+                        <div style="font-size: 12px; margin-top: 5px; color: #666;">Tap to submit</div>
                     </div>
                 `;
             } else {
-                let html = '<div class="message info">Multiple matches found:</div>';
+                let html = '<div class="message info">Tap a student to submit:</div>';
                 matches.forEach(student => {
                     html += `
-                        <div class="search-result">
+                        <div class="search-result" onclick="quickSubmit('${student.number}', '${student.name.replace(/'/g, "\\'")}')">
                             <div class="search-result-number">${student.number}</div>
                             <div class="search-result-name">${student.name}</div>
                         </div>
@@ -617,6 +629,22 @@
                 });
                 resultDiv.innerHTML = html;
             }
+        }
+
+        function quickSubmit(number, name) {
+            // Set the number
+            currentNumber = number;
+            updateDisplay();
+            
+            // Ask user to select row
+            const msgDiv = document.getElementById('searchResult');
+            msgDiv.innerHTML = `
+                <div class="message success">Selected: ${name} (${number})</div>
+                <div style="margin-top: 15px; font-weight: 600;">Select ROW 1 or ROW 2, then click SUBMIT</div>
+            `;
+            
+            // Scroll to the submit section
+            document.querySelector('.section').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Allow Enter key to search
