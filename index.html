@@ -530,38 +530,50 @@
             const student = studentData.find(s => s.number == cardNumber);
             const studentName = student ? student.name : 'Unknown';
 
+            // Show submitting message
+            msgDiv.innerHTML = '<div class="message info">Submitting...</div>';
+
             try {
-                const response = await fetch(`${config.webAppUrl}?action=submitPickup`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        spreadsheetId: config.spreadsheetId,
-                        sheetName: config.responsesSheetName,
-                        cardNumber: cardNumber,
-                        rowType: selectedRow,
-                        studentName: studentName
-                    })
+                // Use iframe method - most reliable for Google Apps Script
+                const params = new URLSearchParams({
+                    action: 'submitPickup',
+                    spreadsheetId: config.spreadsheetId,
+                    sheetName: config.responsesSheetName,
+                    cardNumber: cardNumber,
+                    rowType: selectedRow,
+                    studentName: studentName
                 });
 
-                const data = await response.json();
-
-                if (data.success) {
+                const url = `${config.webAppUrl}?${params.toString()}`;
+                console.log('Submitting to:', url);
+                
+                // Create hidden iframe
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                
+                // Show success after brief delay
+                setTimeout(() => {
                     msgDiv.innerHTML = `<div class="message success">✓ ${studentName} (${cardNumber}) - ROW ${selectedRow === 'ONE' ? '1' : '2'}</div>`;
                     
                     // Clear form
                     clearDisplay();
                     
+                    // Remove iframe
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                    }, 100);
+                    
                     // Clear message after 3 seconds
                     setTimeout(() => {
                         msgDiv.innerHTML = '';
                     }, 3000);
-                } else {
-                    msgDiv.innerHTML = `<div class="message error">Error: ${data.error}</div>`;
-                }
+                }, 500);
+
             } catch (error) {
-                msgDiv.innerHTML = `<div class="message error">Error submitting: ${error.message}</div>`;
+                console.error('Submission error:', error);
+                msgDiv.innerHTML = `<div class="message error">Error: ${error.message}</div>`;
             }
         }
 
