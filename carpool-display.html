@@ -95,12 +95,34 @@
             }
         }
 
-        /* List of Recent Pickups */
+        /* List of Recent Pickups - Two Column Layout */
         .list-container {
             margin-top: 30px;
             padding: 30px;
             max-height: calc(100vh - 250px);
             overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .column-header {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .row-column {
+            display: flex;
+            flex-direction: column;
         }
 
         .pickup-item {
@@ -299,7 +321,14 @@
     </div>
 
     <div class="list-container" id="listContainer">
-        <!-- Pickup items will be added here -->
+        <div class="row-column">
+            <div class="column-header">ROW 1</div>
+            <div id="row1List"></div>
+        </div>
+        <div class="row-column">
+            <div class="column-header">ROW 2</div>
+            <div id="row2List"></div>
+        </div>
     </div>
 
     <script>
@@ -441,7 +470,9 @@
         }
 
         function addToList(name, number, rowType, colorClass) {
-            const listContainer = document.getElementById('listContainer');
+            // Determine which column to add to
+            const listId = rowType === 'ONE' ? 'row1List' : 'row2List';
+            const listContainer = document.getElementById(listId);
             
             const item = document.createElement('div');
             item.className = `pickup-item ${colorClass}`;
@@ -449,13 +480,12 @@
                 <div class="pickup-name">${name}</div>
                 <div class="pickup-info">
                     <div class="pickup-number">#${number}</div>
-                    <div class="pickup-row">ROW ${rowType === 'ONE' ? '1' : '2'}</div>
                 </div>
             `;
             
             listContainer.insertBefore(item, listContainer.firstChild);
             
-            // Keep only last 20 items
+            // Keep only last 20 items per column
             while (listContainer.children.length > 20) {
                 listContainer.removeChild(listContainer.lastChild);
             }
