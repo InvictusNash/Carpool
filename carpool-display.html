@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carpool Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 24px;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        /* Big Popup Name */
+        .popup-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 1200px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .popup-container.active {
+            opacity: 1;
+        }
+
+        .popup-name {
+            font-size: 120px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 8px 30px rgba(0,0,0,0.8);
+            padding: 60px;
+            border-radius: 30px;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .popup-number {
+            font-size: 48px;
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        .popup-row {
+            font-size: 36px;
+            text-align: center;
+            margin-top: 10px;
+            opacity: 0.7;
+            font-weight: 600;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* List of Recent Pickups */
+        .list-container {
+            margin-top: 30px;
+            padding: 30px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .pickup-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 25px 40px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            font-size: 32px;
+            font-weight: 600;
+            animation: slideIn 0.5s ease-out;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .pickup-name {
+            flex: 1;
+        }
+
+        .pickup-info {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            font-size: 24px;
+            opacity: 0.9;
+        }
+
+        .pickup-number {
+            background: rgba(0,0,0,0.3);
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .pickup-row {
+            background: rgba(0,0,0,0.3);
+            padding: 8px 20px;
+            border-radius: 10px;
+        }
+
+        /* Community Colors */
+        .community-SH { background: linear-gradient(135deg, #ff8c00 0%, #ff6600 100%); } /* Orange */
+        .community-NG { background: linear-gradient(135deg, #00c851 0%, #007e33 100%); } /* Green */
+        .community-MA { background: linear-gradient(135deg, #ffeb3b 0%, #fbc02d 100%); color: #333; } /* Yellow - dark text */
+        .community-ZNH { background: linear-gradient(135deg, #616161 0%, #424242 100%); } /* Gray */
+        .community-RF { background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%); } /* Blue */
+        .community-EG { background: linear-gradient(135deg, #f44336 0%, #c62828 100%); } /* Red */
+        .community-UNKNOWN { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+        /* Config Section */
+        .config-section {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        .config-section.hidden {
+            display: none;
+        }
+
+        .config-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 1999;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 14px;
+        }
+
+        .config-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .config-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .status.success {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .status.error {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .status.info {
+            background: rgba(33, 150, 243, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+    </style>
+</head>
+<body>
+    <button class="config-toggle" onclick="toggleConfig()">⚙️ Settings</button>
+
+    <div id="configSection" class="config-section hidden">
+        <h3 style="margin-bottom: 15px;">Display Configuration</h3>
+        
+        <label class="config-label">Spreadsheet ID:</label>
+        <input type="text" class="config-input" id="spreadsheetId" placeholder="Your spreadsheet ID">
+        
+        <label class="config-label">Data Sheet Name:</label>
+        <input type="text" class="config-input" id="dataSheetName" value="Data">
+        
+        <label class="config-label">Form Responses Sheet Name:</label>
+        <input type="text" class="config-input" id="responsesSheetName" value="Form responses">
+        
+        <label class="config-label">Google Apps Script Web App URL:</label>
+        <input type="text" class="config-input" id="webAppUrl" placeholder="Paste your web app URL">
+        
+        <label class="config-label">Popup Duration (seconds):</label>
+        <input type="number" class="config-input" id="popupDuration" value="3">
+        
+        <button class="config-btn" onclick="saveConfig()">Save & Start</button>
+        <div id="statusMessage"></div>
+    </div>
+
+    <div class="header">
+        <h1>🚗 Carpool Pickups</h1>
+        <p>Student Dismissal Display</p>
+    </div>
+
+    <div class="popup-container" id="popupContainer">
+        <div class="popup-name" id="popupName"></div>
+        <div class="popup-number" id="popupNumber"></div>
+        <div class="popup-row" id="popupRow"></div>
+    </div>
+
+    <div class="list-container" id="listContainer">
+        <!-- Pickup items will be added here -->
+    </div>
+
+    <script>
+        let config = {
+            spreadsheetId: '',
+            dataSheetName: 'Data',
+            responsesSheetName: 'Form responses',
+            webAppUrl: '',
+            popupDuration: 3
+        };
+
+        let studentData = [];
+        let processedIds = new Set();
+        let polling = null;
+
+        // Community color mapping
+        const communityColors = {
+            'SH': 'community-SH',
+            'NG': 'community-NG',
+            'MA': 'community-MA',
+            'ZNH': 'community-ZNH',
+            'RF': 'community-RF',
+            'EG': 'community-EG'
+        };
+
+        function loadConfig() {
+            const saved = localStorage.getItem('carpoolDisplayConfig');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('spreadsheetId').value = config.spreadsheetId || '';
+                document.getElementById('dataSheetName').value = config.dataSheetName || 'Data';
+                document.getElementById('responsesSheetName').value = config.responsesSheetName || 'Form responses';
+                document.getElementById('webAppUrl').value = config.webAppUrl || '';
+                document.getElementById('popupDuration').value = config.popupDuration || 3;
+                
+                if (config.webAppUrl) {
+                    startPolling();
+                }
+            }
+        }
+
+        function toggleConfig() {
+            const section = document.getElementById('configSection');
+            section.classList.toggle('hidden');
+        }
+
+        function saveConfig() {
+            config.spreadsheetId = document.getElementById('spreadsheetId').value;
+            config.dataSheetName = document.getElementById('dataSheetName').value;
+            config.responsesSheetName = document.getElementById('responsesSheetName').value;
+            config.webAppUrl = document.getElementById('webAppUrl').value;
+            config.popupDuration = parseInt(document.getElementById('popupDuration').value) || 3;
+            
+            localStorage.setItem('carpoolDisplayConfig', JSON.stringify(config));
+            
+            showStatus('Configuration saved! Loading data...', 'success');
+            
+            loadStudentData();
+            startPolling();
+            
+            setTimeout(() => {
+                document.getElementById('configSection').classList.add('hidden');
+            }, 2000);
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        async function loadStudentData() {
+            if (!config.webAppUrl) return;
+
+            try {
+                const response = await fetch(`${config.webAppUrl}?action=getStudents&spreadsheetId=${config.spreadsheetId}&sheetName=${config.dataSheetName}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    studentData = data.students;
+                    console.log('Student data loaded:', studentData.length, 'students');
+                }
+            } catch (error) {
+                console.error('Error loading student data:', error);
+            }
+        }
+
+        async function checkForNewPickups() {
+            if (!config.webAppUrl) return;
+
+            try {
+                const response = await fetch(`${config.webAppUrl}?action=getRecentPickups&spreadsheetId=${config.spreadsheetId}&sheetName=${config.responsesSheetName}`);
+                const data = await response.json();
+                
+                if (data.success && data.pickups) {
+                    // Process new pickups (most recent first)
+                    for (let pickup of data.pickups) {
+                        if (!processedIds.has(pickup.id)) {
+                            processedIds.add(pickup.id);
+                            displayPickup(pickup);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking for pickups:', error);
+            }
+        }
+
+        function displayPickup(pickup) {
+            // Find student info to get community color
+            const student = studentData.find(s => s.number == pickup.number);
+            const community = student ? student.community : 'UNKNOWN';
+            const colorClass = communityColors[community] || 'community-UNKNOWN';
+            
+            // Show big popup
+            showPopup(pickup.name, pickup.number, pickup.type, colorClass);
+            
+            // Add to list after popup
+            setTimeout(() => {
+                addToList(pickup.name, pickup.number, pickup.type, colorClass);
+            }, config.popupDuration * 1000);
+        }
+
+        function showPopup(name, number, rowType, colorClass) {
+            const popup = document.getElementById('popupContainer');
+            const nameEl = document.getElementById('popupName');
+            const numberEl = document.getElementById('popupNumber');
+            const rowEl = document.getElementById('popupRow');
+            
+            nameEl.textContent = name;
+            nameEl.className = `popup-name ${colorClass}`;
+            numberEl.textContent = `#${number}`;
+            rowEl.textContent = `ROW ${rowType === 'ONE' ? '1' : '2'}`;
+            
+            popup.classList.add('active');
+            
+            setTimeout(() => {
+                popup.classList.remove('active');
+            }, config.popupDuration * 1000);
+        }
+
+        function addToList(name, number, rowType, colorClass) {
+            const listContainer = document.getElementById('listContainer');
+            
+            const item = document.createElement('div');
+            item.className = `pickup-item ${colorClass}`;
+            item.innerHTML = `
+                <div class="pickup-name">${name}</div>
+                <div class="pickup-info">
+                    <div class="pickup-number">#${number}</div>
+                    <div class="pickup-row">ROW ${rowType === 'ONE' ? '1' : '2'}</div>
+                </div>
+            `;
+            
+            listContainer.insertBefore(item, listContainer.firstChild);
+            
+            // Keep only last 20 items
+            while (listContainer.children.length > 20) {
+                listContainer.removeChild(listContainer.lastChild);
+            }
+        }
+
+        function startPolling() {
+            if (polling) {
+                clearInterval(polling);
+            }
+            
+            // Check for new pickups every 2 seconds
+            polling = setInterval(checkForNewPickups, 2000);
+            
+            // Load student data immediately
+            loadStudentData();
+            
+            // Check for pickups immediately
+            checkForNewPickups();
+        }
+
+        // Load config on startup
+        loadConfig();
+    </script>
+</body>
+</html>
