@@ -9,6 +9,17 @@
     <title>Carpool Dismissal</title>
     <style>
         * {
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        input {
+            font-size: 16px !important; /* Prevents iOS auto-zoom on focus */
+            -webkit-user-select: text;
+        }
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -46,14 +57,9 @@
 
         h1 {
             color: #333;
-            margin-bottom: 5px;
-            font-size: 22px;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 12px;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            display: inline-block;
         }
 
         .section {
@@ -77,6 +83,11 @@
             font-weight: 500;
             color: #555;
             font-size: 14px;
+        }
+
+        /* Remove label for search input */
+        #studentName {
+            margin-top: 0;
         }
 
         input[type="text"],
@@ -258,6 +269,126 @@
             margin: 20px 0;
         }
 
+        /* Submission Log */
+        .submission-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .empty-log {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .log-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #667eea;
+            font-size: 14px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .log-item-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .log-item-details {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .log-item-number {
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .log-item-row {
+            background: #f3e5f5;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* Search Dropdown */
+        .input-group {
+            position: relative;
+        }
+
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .search-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f5f5f5;
+        }
+
+        .dropdown-item:active {
+            background: #e0e0e0;
+        }
+
+        .dropdown-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .dropdown-number {
+            color: #666;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
         .message {
             padding: 12px;
             border-radius: 10px;
@@ -340,31 +471,30 @@
         }
 
         .config-toggle {
-            text-align: center;
-            margin-bottom: 20px;
+            float: right;
+            margin-top: -3px;
         }
 
         .toggle-btn {
-            background: none;
+            background: rgba(102, 126, 234, 0.1);
             border: none;
             color: #667eea;
-            text-decoration: underline;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 20px;
+            padding: 8px 12px;
+            border-radius: 8px;
         }
 
         .hidden {
             display: none;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚗 Carpool Dismissal</h1>
-        <p class="subtitle">Enter card tag numbers for student pickup</p>
+        <h1>🚗 Carpool</h1>
 
         <div class="config-toggle">
-            <button class="toggle-btn" onclick="toggleConfig()">⚙️ Setup Google Sheets</button>
+            <button class="toggle-btn" onclick="toggleConfig()">⚙️</button>
         </div>
 
         <div id="configSection" class="config-section hidden">
@@ -385,10 +515,17 @@
             <div id="configMessage"></div>
         </div>
 
+        <!-- Search by Name Section - MOVED TO TOP -->
+        <div class="section">
+            <div class="input-group">
+                <input type="text" id="studentName" placeholder="Start typing student name..." autocomplete="off" oninput="showSearchDropdown()" style="font-size: 16px;">
+                <div id="searchDropdown" class="search-dropdown"></div>
+                <div id="debugInfo" style="font-size: 11px; color: #666; margin-top: 5px;"></div>
+            </div>
+        </div>
+
         <!-- Submit Card Number Section -->
         <div class="section">
-            <div class="section-title">Submit Card Tag</div>
-            
             <!-- Display Screen -->
             <div class="display-screen" id="displayScreen">
                 <div class="display-number" id="displayNumber"></div>
@@ -424,17 +561,12 @@
 
         <div class="divider"></div>
 
-        <!-- Search by Name Section -->
+        <!-- Submission Log -->
         <div class="section">
-            <div class="section-title">Search Student</div>
-            
-            <div class="input-group">
-                <label for="studentName">Student Name:</label>
-                <input type="text" id="studentName" placeholder="Enter student name">
+            <div class="section-title">Recent Submissions</div>
+            <div id="submissionLog" class="submission-log">
+                <div class="empty-log">No submissions yet</div>
             </div>
-
-            <button class="search-btn" onclick="searchStudent()">Search</button>
-            <div id="searchResult"></div>
         </div>
     </div>
 
@@ -442,6 +574,7 @@
         let selectedRow = null;
         let studentData = [];
         let currentNumber = '';
+        let submissionLog = []; // Track recent submissions
         let config = {
             spreadsheetId: '',
             dataSheetName: 'Data',
@@ -585,6 +718,9 @@
                 setTimeout(() => {
                     msgDiv.innerHTML = `<div class="message success">✓ ${studentName} (${cardNumber}) - ROW ${selectedRow === 'ONE' ? '1' : '2'}</div>`;
                     
+                    // Add to submission log
+                    addToSubmissionLog(studentName, cardNumber, selectedRow);
+                    
                     // Clear form
                     clearDisplay();
                     
@@ -605,69 +741,138 @@
             }
         }
 
-        function searchStudent() {
-            const searchName = document.getElementById('studentName').value.trim().toLowerCase();
-            const resultDiv = document.getElementById('searchResult');
+        function showSearchDropdown() {
+            const searchInput = document.getElementById('studentName');
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const dropdown = document.getElementById('searchDropdown');
+            const debugInfo = document.getElementById('debugInfo');
 
-            if (!searchName) {
-                resultDiv.innerHTML = '<div class="message error">Please enter a student name</div>';
+            // Show debug info
+            debugInfo.textContent = `Searching for: "${searchTerm}" | Students loaded: ${studentData.length}`;
+
+            console.log('Search term:', searchTerm, 'Length:', searchTerm.length);
+            console.log('Student data count:', studentData.length);
+
+            if (!searchTerm || searchTerm.length < 1) {
+                dropdown.classList.remove('active');
                 return;
             }
 
             if (studentData.length === 0) {
-                resultDiv.innerHTML = '<div class="message info">Loading student data... Please configure Google Sheets first.</div>';
+                console.log('No student data loaded');
+                dropdown.innerHTML = '<div class="dropdown-item" style="padding: 12px;">Loading student data...</div>';
+                dropdown.classList.add('active');
+                debugInfo.textContent = 'ERROR: No student data loaded. Check Google Sheets configuration.';
                 return;
             }
 
             const matches = studentData.filter(s => 
-                s.name.toLowerCase().includes(searchName)
-            );
+                s.name.toLowerCase().includes(searchTerm)
+            ).slice(0, 10); // Limit to 10 results
+
+            console.log('Found matches:', matches.length);
+            debugInfo.textContent = `Found ${matches.length} matches for "${searchTerm}"`;
 
             if (matches.length === 0) {
-                resultDiv.innerHTML = '<div class="message info">No students found matching "' + searchName + '"</div>';
-            } else if (matches.length === 1) {
-                const student = matches[0];
-                resultDiv.innerHTML = `
-                    <div class="search-result" onclick="quickSubmit('${student.number}', '${student.name.replace(/'/g, "\\'")}')">
-                        <div class="search-result-number">${student.number}</div>
-                        <div class="search-result-name">${student.name}</div>
-                        <div style="font-size: 12px; margin-top: 5px; color: #666;">Tap to submit</div>
-                    </div>
-                `;
+                dropdown.innerHTML = '<div class="dropdown-item" style="padding: 12px;">No students found</div>';
+                dropdown.classList.add('active');
             } else {
-                let html = '<div class="message info">Tap a student to submit:</div>';
+                let html = '';
                 matches.forEach(student => {
                     html += `
-                        <div class="search-result" onclick="quickSubmit('${student.number}', '${student.name.replace(/'/g, "\\'")}')">
-                            <div class="search-result-number">${student.number}</div>
-                            <div class="search-result-name">${student.name}</div>
+                        <div class="dropdown-item" onclick="selectFromDropdown('${student.number}', '${student.name.replace(/'/g, "\\'")}')">
+                            <div class="dropdown-name">${student.name}</div>
+                            <div class="dropdown-number">#${student.number}</div>
                         </div>
                     `;
                 });
-                resultDiv.innerHTML = html;
+                dropdown.innerHTML = html;
+                dropdown.classList.add('active');
+                console.log('Dropdown should be visible now with class:', dropdown.className);
             }
         }
 
-        function quickSubmit(number, name) {
+        function selectFromDropdown(number, name) {
             // Set the number
             currentNumber = number;
             updateDisplay();
             
-            // Ask user to select row
-            const msgDiv = document.getElementById('searchResult');
+            // Clear and hide dropdown
+            document.getElementById('studentName').value = '';
+            document.getElementById('searchDropdown').classList.remove('active');
+            
+            // Show selection message
+            const msgDiv = document.getElementById('submitMessage');
             msgDiv.innerHTML = `
                 <div class="message success">Selected: ${name} (${number})</div>
-                <div style="margin-top: 15px; font-weight: 600;">Select ROW 1 or ROW 2, then click SUBMIT</div>
+                <div style="margin-top: 10px; font-size: 13px; font-weight: 600;">Select ROW 1 or ROW 2, then click SUBMIT</div>
             `;
             
-            // Scroll to the submit section
-            document.querySelector('.section').scrollIntoView({ behavior: 'smooth' });
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Allow Enter key to search
-        document.getElementById('studentName').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchStudent();
+        function addToSubmissionLog(name, number, row) {
+            const logContainer = document.getElementById('submissionLog');
+            
+            // Remove empty message if present
+            const emptyMsg = logContainer.querySelector('.empty-log');
+            if (emptyMsg) {
+                emptyMsg.remove();
+            }
+            
+            // Create log entry
+            const entry = {
+                name: name,
+                number: number,
+                row: row,
+                time: new Date().toLocaleTimeString()
+            };
+            
+            submissionLog.unshift(entry); // Add to beginning
+            
+            // Keep only last 20 submissions
+            if (submissionLog.length > 20) {
+                submissionLog.pop();
+            }
+            
+            // Update display
+            updateSubmissionLog();
+        }
+
+        function updateSubmissionLog() {
+            const logContainer = document.getElementById('submissionLog');
+            
+            if (submissionLog.length === 0) {
+                logContainer.innerHTML = '<div class="empty-log">No submissions yet</div>';
+                return;
+            }
+            
+            let html = '';
+            submissionLog.forEach(entry => {
+                html += `
+                    <div class="log-item">
+                        <div>
+                            <div class="log-item-name">${entry.name}</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 2px;">${entry.time}</div>
+                        </div>
+                        <div class="log-item-details">
+                            <span class="log-item-number">#${entry.number}</span>
+                            <span class="log-item-row">ROW ${entry.row === 'ONE' ? '1' : '2'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            logContainer.innerHTML = html;
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('searchDropdown');
+            const searchInput = document.getElementById('studentName');
+            if (e.target !== searchInput && e.target !== dropdown) {
+                dropdown.classList.remove('active');
             }
         });
 
